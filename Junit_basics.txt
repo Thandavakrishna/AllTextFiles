@@ -1,0 +1,65 @@
+@Test – marks a test method in a class. This method will be treated like a test, it’ll get executed by the test engine, get a row in the reporting, and so on.
+@TestFactory – a method marked with the @TestFactory will be used to create test cases at runtime. Use it to run the randomized tests or test based on the external data.
+@DisplayName – makes reports readable with proper test names
+@BeforeAll/@BeforeEach – lifecycle methods executed prior running tests
+@AfterAll/@AfterEach — lifecycle methods for cleanup, executed after the tests
+@Tag – tags a method to separate tests into suites, for example @Tag("fast") can be used to distinguish quick tests from the ones that take longer.
+@Disabled – makes JUnit skip this test, don’t overuse it. In general disabled tests should be deleted and kept just in the VCS history.
+Use @Nested on an inner class to control the order of tests.
+Use @ExtendWith to enhance the execution: provide mock parameter resolvers and specify conditional execution.
+
+Error message can be now specified as a Supplier for Assertions. A group assertion feature is new one that consists of several individual assertions that are run together and are also reported together.
+
+ParameterResolver defines the API for dynamically resolving parameters at runtime. If you instrument your class with the @ExtendWith annotation and point it at your custom ParameterResolver class, it will be consulted to provide the objects for the parameters you use in your test methods.
+
+A great example of JUnit’s resolver is the "TestInfoParameterResolver", which provides the TestInfo objects with the details about the test case: display name, tags, etc.
+
+
+Use the @TestFactory annotation to create tests at runtime. You have to annotate a method with the @TestFactory and make it return a collection of "DynamicTest" classes. It can be an Iterable, or a Stream too, if you prefer.
+
+Basics:
+=======
+
+https://github.com/in28minutes/JUnitIn28Minutes
+
+A test is successful if there is no failure.
+
+@Test - org.junit.Test
+fail("xxxxx") -> One of methods provided by Assert. org.junit.Assert.*
+assertEquals(expected,actual)
+@Test should be public and have return type as void always.
+assertFalse(method)-> Succeeds if method returns boolean false.
+assertTrue(method) -> Succeeds if method returns boolean true.
+@Before -> Runs before each Test Method. If an object is created, that happens before run of each test.
+@After -> Runs after each Test Method. Usually used to clean up connection to db etc.
+@BeforeClass -> It should be public, static and void . This gets executed only once before the class.
+@AfterClass -> It should be public, static and void . This gets executed only once after the class.
+
+assertEquals checks if the expected and actual Objects are same if objects are passed and not their values. So, to test arrays we need to use
+assertArrayEquals(expected, actual)
+@Test(expected=NullPointerExpection.class) -> Test succeeds if Null Pointer exception is thrown.
+@Test(timeout=1000) -> Test timesout after specified time interval. Helps to check performance.
+
+@RunWith(Parameterized.class) -> Helps to change a Test class to a Parameterized class(declared at top) (org.junit.runner.RunWith; org.junit.runners.Parameterized;)
+Add a method with @Parameters as public Static Collection to define paramters that needs to be passed to Test Methods.
+Declare expected input and actual output conditions and return as Collection to be used by Tests. Generate a constructor by declaring input and output variables.
+Use those variable names in Tests.
+
+Run all tests by right clicking on tests package and Run as JUnit.
+You can group set of test classes and create a Test Suite by selecting desired no.of classes.
+Test Suite contains @RunWith(Suite.class) and @SuitClasses({ABC.class, DEF.class}) at start of class.
+
+Best Practices:
+
+TestName should indicate what are conditions that are being tested.
+Values that are being highlighted are values that are important to test.
+Try and take out values that are not required for test.
+
+Test one condition in one particular test method. 
+Try and abstract all unnecessary dependencies.
+Test should fail only when there is a failure.
+Try and cover all possible exceptions.
+
+
+
+

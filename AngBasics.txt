@@ -1,0 +1,70 @@
+Required:
+
+1) script tag to reference angular.js version
+2) ng-app directive in order to recognize and bootstrap as angular application.
+
+Good practices with js:
+
+Create abstractions between functions.
+Do not create global variables. Use what is called IIFE(Immediately invoked function expression). Function that is invoked by itself. (Only that is present in entire file Eg: script.js) -> IIFE.zip contains example.
+
+Controller directive is present in HTML. ng-controller can be used where ng-app is already present and need to have a name.
+Controller is a function that Angular invokes. Controller takes a $scope parameter.
+
+Primary responsibility of controller is to set up model for $scope object. Angular passes $scope to controller function and controller manipulates that scope.
+Controller does not change HTML. It changes model and uses binding expression to manipulate data in view.
+
+Angular http call will automatically convert json to js objects. http get call does not provide data right away and gives it in future but gives a 'promise' object immediately. So use this promise in Angular model to get data later to view.
+
+In ideal world, controllers are not written in global namespace. They are written inside module.
+
+Working with modules:
+Create a module with a name. Add dependencies in array required for this new module.
+Register controller with module.
+Tell angular to use module with ng-app directive.
+
+Directives:
+ng-click = search() -> triggers function from js file based on click event.
+ng-submit = search() -> triggers function from js file based on button.
+ng-repeat = "repo in repos" -> similar to for each loop.
+
+can call http methods inside another http declared method and obtained reponse from first call can be used.
+
+Filter:
+expression|filtername:parameter
+
+Services:
+Powerful. Can keep the code that does not fall under view or controller.
+Directives act as intermediate between model and view.
+$interval, $http are services.
+===========================================================================================================================================
+
+AngularJs is JS framework that binds HTML UI to JS objects. It is a binding framework.
+
+Angular JS Fundamentals in 60-ish minutes:
+
+https://www.youtube.com/watch?v=i9MHigUZKEM
+
+Code for videos -> tinyurl.com/angularjsdemos
+
+9:25 Directives/Data Binding
+17:23 Filters
+23:35 Views/$scope/Controller Intro
+31:00 Modules/Routes/Factories Intro & Explanation
+33:57 Modules & Containers
+     38:32 Correct way to set up a Controllers
+     40:33 Anther way to set up Controllers
+42:03 Roles of Routes
+43:17 Defining Routes
+     49:28 ng-view
+53:45 Factories / Services
+     55:18 Defining Factories
+     57:36 Factory Example
+63:13 End of instruction
+63:16 Examples / Demos
+67:50 Summary
+69:30 Sample code / Resources
+
+It does two-way data binding.
+follows MVC. Can perform routing. Robust Testing, jqLite for DOM-manipulation(mini-me of jquery), History is built in, Templates, share code through Factories and Services.
+

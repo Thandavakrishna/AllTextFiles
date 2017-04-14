@@ -1,0 +1,24 @@
+fractal
+
+touch typing
+
+practice
+
+3d game
+
+tutorial game java
+
+program -> break into steps and test.
+
+Control+Shift+F -> intendation.
+
+shortcuts: -> Control+space : autocompletes with possible methods
+
+sysout
+main
+All necessary imports -> Control+Shift+O
+
+
+Search  For:
+
+scanner java -> find method that checks for nextInt or double etc and do coding

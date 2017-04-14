@@ -1,0 +1,33 @@
+MVC is Front-end design pattern that is useful for designing web applications.
+Analogy is Restaurant. 
+Waiter - 
+Cook   - 
+Presenter(fancy restaurants)
+
+Advantages:
+
+Separation of concerns
+Easily make changes
+
+
+MVC using Servlets and JSPs
+
+**Check Photos**
+
+JSP can be made to pass back control to Servlet and then to User.
+
+response.sendRedirect("<jsp>") -> Used to perform redirection from Servlet. This cannot be used in case any HTML content is added to response. So "response" can be used either for HTML content or redirection. We can pass servlet as well for sendRedirect to go to another Servlet.
+return; -> Mentioned after sendRedirect stmt.
+
+If we want to display data in some other page after the current page is successful, we have to set that data so that it will be visible in the redirected page. Since there are two requests present, one from user (possibly) and second is by browser due to re-direction, data from first request will be lost. Also, we cannot set both HTML content and redirection on same response.
+
+Session object is the solution here as it will be available per user across different requests.
+
+All data cannot be saved in session. What if I want to send data in same request to next call as well????
+
+In this case, we should not let browser perform redirection so that a new request is made. The request should be made on server side. We have to use "RequestDispatcher" and it takes argument to which we are actually dispatching control to.
+We have to pass request and response of current jsp/Servlet to dispatcher so that they will be available to the redirected jsp/Servlet.
+Now, we need not use session object to transfer data and can use same request object.
+
+In the browser URL, we do not see new Servlet/JSP URLpattern in second case as browser is unaware of server side redirection.
+

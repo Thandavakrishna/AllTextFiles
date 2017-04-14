@@ -1,0 +1,118 @@
+http://www.vogella.com/tutorials/Gradle/article.html
+
+Gradle has the notion of projects and tasks.
+
+Gradle uses the directory name as project name. You can change this by creating a settings.gradle file in the directory which specifies the project name.
+
+gradle project -> Displays project description added in build.gradle
+
+apply plugin: 'pluginname'
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.squareup.okhttp:okhttp:2.5.0'
+    testCompile 'junit:junit:4.12'
+
+}
+
+repositories {
+    mavenCentral()
+}
+
+repositories {
+    maven {
+        url "http://repo.mycompany.com/maven2"
+    }
+}
+You can also specify other targets, for example Bintray as Maven repository.
+
+repositories {
+        maven ("http://jcenter.bintray.com/")
+}
+The next listing demonstrates how to define an Ivy dependency.
+
+repositories {
+    ivy {
+        url "http://repo.mycompany.com/repo"
+    }
+}
+
+You can refresh dependencies in your cache with the command line option --refresh-dependencies. You can also delete the cached files under ~/.gradle/caches. With the next build Gradle attempts to download the dependencies again.
+
+Gradle also supports abbreviation of tasks, e.g,. to start the task lars using the gradle l command is sufficient.
+gradle -q command. The -q or --quiet parameter makes the execution of Gradle less verbose.
+
+To define a different build file the -b buildFileName option can be used.
+
+In scenarios where no network connection is available the --offline parameter can be used. This runs the Gradle build offline, which means that Gradle does not try to reach resources from the network during a build. 
+
+To get a detailed output of what Gradle is doing you can specify the --info parameter.
+
+gradle -q tasks -> a list of tasks present for gradle is shown. Custom tasks are displayed too
+
+gradle tasks --all -> command would also list dependent tasks, which are invoked before the actual task.
+
+Custom task:
+
+task hello {
+        doLast {
+                println 'Hello Gradle'
+        }
+}
+
+Gradle allows the definition of default tasks in the build file. These are executed, if no other tasks are specified. Tasks can also define their dependencies. Both settings are demonstrated in the following build file.
+
+defaultTasks 'clean', 'compile'
+
+task clean {
+        doLast {
+                println 'Executing the clean task'
+        }
+}
+
+task compile {
+        doLast {
+                println 'Executing the compile task'
+        }
+}
+
+task other(dependsOn: 'compile') {
+        doLast {
+                println "I'm not a default task!"
+        }
+}
+
+task cleanOther {
+        doLast {
+                println "I want to clean up before running!"
+        }
+}
+
+cleanOther.dependsOn clean, compile
+
+Skipping tasks can be done by passing a predicate closure to the onlyIf method of a task or by throwing a StopExecutionException.
+
+task eclipse {
+        doLast {
+                println 'Hello Eclipse'
+        }
+}
+
+// #1st approach - closure returning true, if the task should be executed, false if not.
+eclipse.onlyIf {
+        project.hasProperty('usingEclipse')
+}
+
+// #2nd approach - alternatively throw an StopExecutionException() like this
+eclipse.doFirst {
+        if(!usingEclipse) {
+                throw new StopExecutionException()
+        }
+}
+
+The Gradle wrapper allows that a user can run the build with a predefined version and settings of Gradle without a local Gradle installation. This wrapper is a batch script on Windows, and a shell script for other operating systems. When you start a Gradle build via the wrapper, the specified version of Gradle is automatically downloaded and used to run the build.
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.11'
+}
+

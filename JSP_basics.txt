@@ -1,0 +1,147 @@
+To print data that can be displayed on web page can be performed using Servlet, we need write all huge PrintWriters to display data required on UI/html.
+
+More than logic required to write Servlet, html text to print on page will be huge. Solution is to use JSPs.
+
+With Servlets, we put all HTML text into Java print statements which gets displayed on UI.
+
+With JSP, HTML contains java code. Static code is written in HTML and dynamic code is written in Java.
+
+JSP page looks similar as HTML page with few metadata additional to HTML on top. But difference is , we can write Java code in JSP page. We need to differentiaite this Java code inside JSP page, else it would be treated as HTML code too.
+
+JSP tags:
+===========
+<% ..... %> -> Script tag. Rendered as java code. Any number of script tags can be present in a JSP page.
+
+To display java code output in HTML, we can use out.println(""). out object is JSP's PrintWriter and hence it renders to HTML. We need not create explicit PrintWriter objects like in Servlet.
+
+Since we have to display many things on UI, there is shortcut present for "out.println(".....")" which is to use script tag to display dynamic value generated due to java code from another script tag or static content or expression.
+Eg: The value of k is: <%=k %> <%=1+2 %> <%=34 %>
+
+<%! .... %> -> Definition tag. Can be used to add methods. This method is available to all other script tags.
+
+Understand JSP:
+==================
+We can have Java code spanning across multiple JSP script tags and can have HTML content in between script tags. How does this work???
+
+Tomcat internally converts all JSP code into Servlet Java code. All code inside script tags is converted into code under doGet/doPost methods. Static HTML content is treated as println to PrintWriter.
+
+Having Java method declared under script tag throws error as it is treated as method declared inside doGet() method and we cannot define a method inside another method in Java.
+
+Servlet generated due to JSP code gets saved in a temporary folder under Tomcat installation.
+
+Servlet Code has a _jspService method which contains all the script tags code of jsp, static content. All doGet and doPost goes inside _jspService method of Serlvet generated code because inside jsp, we are not telling tomcat that code has to go into a doGet or doPost method. So Tomcat catches all code into _jspService() method instead creating doGet() and doPost() methods and keep all code in both of them.
+
+<%......%> -> This code is converted into normal Java stmts.
+<%= ... %> -> This code is converted into out.println() Java stmts.
+<%!.....%> -> Converted into Java method code.
+Static HTML content -> Converted into out.write() Java stmts.
+HTML schema -> Converted into out.write() Java stmts.
+
+C:\Users\thand\apache-tomcat-9.0.0.M17\work\Catalina\localhost\SimpleServletProject\org\apache\jsp
+
+Directives:
+===========
+If we want to display Date on jsp page, new Date() inside <% %> does not work as we need to import java.util.Date class. We cannot do it in another script tag, as it is treated as content in doGet method.  We have to use import at the top where metadata is present with <%@ page %> . This is called Page Directive which is present for every JSP. We can specify properties to this page directive that gets applied to that page. This import property of jsp says to Tomcat to write an import stmt in the servlet generated code.
+
+contentType="text/html" -> Due to this property of page directive, browser knows that HTML tags in jsp should not be displayed as simple text but converted to actual HTML tags.
+
+We can create multiple <@ page %> directives to specify multiple properties so that code looks cleaner.
+
+<%@ include file="/<relativepath>/xxx.jsp>" %> -> We can embed response from another jsp into current jsp response by using include directive.
+
+We can create a JSP page without having any metadata, HTML tags and can have simple text too. Due to behind-the-scenes Servlet, this works just fine.
+
+Scopes:
+=======
+
+JSP has implicit "request", "session", "application context" objects which are comparable to Servlet objects. "application context" is called "application" in jsp. So these can be used inside tags.
+
+Can get query parameters from URL and can be used to display content.
+
+There is an implicit "pageContext" object which is not present in Servlets. we can set attributes to pageContext as well.
+Using pageContext.setAttribute(String, Object, int) overloaded method, We can set attributes to Application, Session and Request scopes also using this.
+
+pageContext.findAttribute("<attribute>") -> Handy feature of page context which can be used when we know attribute but does not know scope. This checks first at page context, then at request object, then at session object and then at context object. If not found, then only returns null.
+
+JSPInit and InitParams:
+=======================
+
+We can specify initialization parameters for a JSP using web.xml. We have to define a <servlet> tag for this. Instead of <servlet-class>, <jsp-file> tag is used.
+
+  <servlet>
+  	<servlet-name>InitJSP</servlet-name>
+  	<jsp-file>/initpage.jsp</jsp-file>
+  	<init-param>
+  		<param-name>defaultUserName</param-name>
+  		<param-value>Default User Name</param-value>
+  	</init-param>
+  </servlet>
+  <servlet-mapping>
+  	<servlet-name>InitJSP</servlet-name>
+  	<url-pattern>/initpage.jsp</url-pattern>
+  </servlet-mapping>
+
+Can specify multiple init-params inside servlet tag.
+
+ServletConfig is passed to us by Tomcat on creation of Servlet Object. Init parameters specified in annotations or web.xml are bundled by Tomcat into an object called ServletConfig and it is passed to init() method. Same configuration is available to us as member variable called "ServletConfig".
+
+ServletContext/Application Context object is scoped object that is available across application.
+
+getServletConfig.getInitParameter("<param-name>") -> can be used in JSP script tags to access value of init parameter.
+
+An _jspInit() is present in Servlet generated code of JSP. This can be overridden in out JSP code.
+
+======================================================================================================
+
+JSPs are created inorderto prevent the overhead to write all HTML PrintWriter stmts inside Servlets.
+
+JSPs having HTML code and JSP script blocks works fine for small HTML pages. Beyond a particular limit, it gets hard to maintain this code as well. Also, code inside JSP with script tags is not in complete xml format.
+
+JSTL is used so that all code inside JSP is in xml format and code is easier to maintain.
+JSTL is standard now. All JSTL tags start with <jsp: syntax.
+
+<jsp:useBean> -> Used to get object from the specified scope property.
+This can be used to set scope object properties as well. If the object from which value is tried to obtain does not exist, then this tag creates new object in that scope. We can also set some properties when the object is created using this tag.
+
+Eg: Code changes from JSP script tags to JSTL and to set properties using JSTL tags to scope objects. If the re-directed URL is directly hit, there will not be "user" property on request object and hence 'userName' will be set to 'newUser'.
+---
+	
+	<%-- 	<%
+	/* User user = (User)session.getAttribute("user"); */
+		User user = (User)request.getAttribute("user");
+	%> --%>
+	
+	<jsp:useBean id="user" class="com.thandav.learn.dto.User" scope="request">
+		<jsp:setProperty property="userName" name="user" value="newUser" />
+	</jsp:useBean>
+	
+	Hello <jsp:getProperty property="userName" name="user"/>!!
+	
+	<%-- Hello <%=user.getUserName() %>!! --%>
+
+
+request.getAttribute() -> Used to get an attribute which is set at request scope level. Server side data which can be set at different scope levels. Takes String as parameter and returns object. We can set objects as attributes here.
+request.getParameter() -> Used to get parameters that are entered by user in a HTML form section or user enters in query parameter. Client side data. Takes String as parameter and returns String as it can be any element of HTML.
+
+	<jsp:useBean id="user" class="com.thandav.learn.dto.User" scope="request">
+		<jsp:setProperty property="userName" name="user" param="newUser" />
+	</jsp:useBean>
+
+We can use "param" property to capture a request parameter that is obtained from user input and can be set on a different jsp page.
+
+Shortcuts with JSTL:
+1) If property name from 1st jsp page in form is present as 2nd jsp page where property is queried, need not specify the param property.
+
+	<jsp:useBean id="user" class="com.thandav.learn.dto.User" scope="request">
+		<jsp:setProperty property="userName" name="user" />
+	</jsp:useBean>
+
+	Hello <jsp:getProperty property="userName" name="user"/>!!
+
+2) If all properties from 1st jsp page have member variables with same names in DTO, we need not set individual properties and can use "*" to set all of them. No param property is required in this case.
+	
+	<jsp:useBean id="user" class="com.thandav.learn.dto.User" scope="request">
+		<jsp:setProperty property="*" name="user" />
+	</jsp:useBean>
+	
+	Hello <jsp:getProperty property="userName" name="user"/>!!

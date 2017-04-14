@@ -1,0 +1,116 @@
+Add Tomcat server to a project and start server. 
+
+http://localhost:8080 should display Tomcat home page. If 404 error displays, go to Properties of Server and do 'Switch Location' to show server in 'Servers' of Project Explorer.
+
+Double Click on Tomcat server that displays in Project Explorer and select 'Use Tomcat Installation' and specify server path so that greeting page is displayed.
+
+Create Dynamic Web Project -> Context root , content directory.
+
+Go to Navigator -> Find web.xml . <welcome-file> is the one that gets displayed on home page once app along with context root is launched if no specific page is mentioned.
+
+Servlet is a java class that resides on Tomcat instance. This class is going to run on VM which is on Tomcat Server. 
+Servlet can be considered as analogous to Class that runs with main method on desktop but servlet will run on server which can be on different machine too.
+Servlet does not contain main method but it has some default methods that get executed when it is accessed and Tomcat executes them.
+
+When creating Servlet file, it should have HTTPServlet as Super Class. URL mapping is populated with Class name being created. Default methods are shown as we extended HTTPServlet class.
+
+Servlet file created will have @WebServlet annotation and inherited methods. urlPatterns is actual URL pattern.
+Eg: @WebServlet(description = "simple servlet jsp desc", urlPatterns = { "/SimpleServletPath" })
+When URL is hit, Tomcat creates request and response objects. 
+doGet method executes by default on running this servlet. If HTML code needs to be generated, we can use response object. 
+PrintWriter class can be used to capture response.getWriter() and response.getWriter can be used to pass content to client. Tomcat takes the information set on response.getWriter() and gives it back to browser to render HTML information using println/print methods on it. 
+
+Configuring Servlet in a different way is using XML configuration before annotations came in Java.
+web.xml is called deployment descriptor coz it has deployment info and project info.
+For this, create normal class and extend HTTPServlet. Add doGet(<request>, <response>). Use web.xml to create servlet. Use <servlet> tag.
+<servlet>
+	<servlet-name>
+	<servlet-class>
+
+<servlet-mapping>
+	<servlet-name>
+	<url-pattern>
+
+******Each Servlet should have a Servlet Mapping.*****	
+Annotations started with Java5. So before that Servlets were written using XML format.
+As annotations are inside Java class, if there are any changes made to config, class needs to be compiled again but with web.xml taken will take without re-compilation. But Tomcat needs to restarted, since tomcat looks at web.xml when restarted.
+		
+Parameters to Servlet:
+1) URL Parameter - Use for get method. pass parameter with ?<param>=<value>. Capture value of parameter using request.getParameter(<param>). Add more parameters using & operator. Query Parameters are displayed in URL. Do not use for login operations as password will be displayed in URL :D
+2) Post Parameter - To use Post parameter, we need HTML and we need form. Form takes 'action' argument that gets executed when form is submitted. So provide urlpattern of servlet to action. When form is submitted, it defaultly uses getter method. To use doPost, we have specify form as Post request(add 'method' attribute as post) and add doPost method to Servlet. In POST, query parameter goes as request body, so we cannot see it in URL.
+
+More parameters:
+If an HTML control can pass multiple values(like multiple options can be selected from a dropdown), request.getParameter(<HTMLElementName>) will not work. request.getParameterValues(<HTMLElementName>) should be used.
+
+Doing GET operation multiple times may not cause any impact. POST operation is used to update some data to backend. Hence shows an alert asking for confirmation.
+
+All HTTPServlet classes implemented by servers(Tomcat, Glassfish, JBoss) should follow specification and contain methods.
+
+Scopes:
+=======
+Servlet class we created contains HTTPServlet request, response objects and Servlet object itself.
+Servlet runs in Tomcat container. It takes care of creating above objects. 
+Everytime a URL hit is made(same browser or different browser)/form is submitted, request & response objects are created and doGet, doPost methods of Servlet are called.
+Request and response objects - Per access
+Servlet object - Not created per access
+Different requests have different servlet threads, not instances. Each thread addresses different users.
+
+HTTP is a Stateless Protocol. Stateless means HTTP does not expect that user request and data are remembered.
+So, it means user login information needs to be passed every time as request object is per access. This is important as data needs to persisted across login, shopping, payment screens etc.
+To get around this problem, "Session" object is being available for us to save data values at some point during execution of a servlet and retrieve data in another point during execution of servlet.
+
+HTTPSession session = request.getSession();
+session.setAttribute(<name>,<value/variable used for mapping query Parameter of request>); - Can assign an object as variable
+session.getAttribute(<name>) returns an Object. Need to cast to data type if required.
+
+Session object is created per user/browser. For same user/browser, session objects are available across requests. Each request object has a handle to session object.
+
+For data to be available across entire application, shared across servlets and users , we need something bigger than Session.(Session object is available across different servlets).
+
+Use case is Initialization code like db connection opened once and available across application.
+
+Soltuion is "Context Object". 
+
+ServletContext context = request.getServletContext();
+
+Context object data is retained across different users/different browsers/different machines. Only one context object is available per application.
+
+Servlet life cycle:
+===================
+
+Request Made from browser ----> Check if Servlet is available ----> No ---> Create new Servlet object   ---> create a Thread -> Use doGet, doPost
+								--> Yes --> Use existing Servlet object ---> create a Thread -> Use doGet, doPost
+
+Few methods get created before calling doGet/doPost. init(), service() methods. These are inherited methods.
+init() -> Method gets executed on new Servlet object creation
+service() -> This method gets executed on new Thread creation
+
+***Check Photos***
+
+Servlet Inheritance:
+==================
+GenericServlet ----> HTTPServlet ---> MyServlet
+Other Servlet types which are present extends GenericServlet.
+
+***Check Photos***
+
+initParams={@WebInitParams(name="<name>", value="<value>") in @WebServlet annotation to perform this operation.
+getServletConfig().getInitParameter("<name>") -> Add in code to access value before Servlet Object creation.
+
+in XML config, inside web.xml add tags inside <servlet> tag
+<init-param>
+	<param-name>
+	<param-value>
+
+ServletConfig is passed to us by Tomcat on creation of Servlet Object. Init parameters specified in annotations or web.xml are bundled by Tomcat into an object called ServletConfig and it is passed to init() method. Same configuration is available to us as member variable called "ServletConfig".
+
+ServletContext/Application Context object is scoped object that is available across application.
+
+Make sure to ServletConfig (like getServletConfig) to set initialization code. This is per servlet configuration.
+
+init(ServletConfig config) available in GenericServlet implementation. calls init() inside it. Simple init() without parameters for overriding. We dont have to set member variables as already set by ServletConfig. Better to override this one.
+
+service() method overridden at HTTPServlet. service method is present in GenericServlet takes ServletRequest and ServletResponse parameters. HTTPServlet's service() implementation casts them into HTTPServletRequest and HTTPServletResponses and calls corresponding doGet and doPost methods with HTTPServletRequest and HTTPServletResponse parameters.
+This decides which doXXX method to be called. If doXXX methods are not overridden in our servlets, an Unsupported exception is thrown.
+
+----------------------------------

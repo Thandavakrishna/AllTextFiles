@@ -1,0 +1,284 @@
+Hibernate is an ORM tool.
+Follows rules that are implemented by JPA.
+All JPA annotations used will be implemented by Hibernate.
+Class correponds to a table and an object correponds to a row in a table.
+
+Main problems with normal JPA:
+==============================
+Mapping member variables to columns to perform insert, update and during retrieval of data.
+Mapping relationships.
+Handling data types. Most RDMS do not have boolean types.
+Managing changes to object state.
+
+If there are two tables in which one has relationship to other, we tend to implement this Java code using some conditions rather than actual parent-child relationship in database. This deviates a little from Object-oriented design.
+
+ORM -> Object Relational Mapping. 
+
+Hibernate addresses this gap between Objects and Relational databases.
+
+Setup:
+======
+Download Hibernate from hibernate.org
+Add hibernate jar, required jars, JPA jar, javaassist jar, commons-logging, slf4j as User Library to Build path for project.
+
+Install database. Postgres.
+
+Saving without Hibernate:
+========================
+JDBC database configuration
+Model object
+Service method to create model object
+Database design
+DAO method to save object using SQL queries.
+
+Hibernate way:
+==============
+JDBC database configuration - Hibernate configuration
+Model object - Annotations
+Service method to create model object - Use Hibernate API
+Db design - not needed
+DAO method to save object using SQL queries - Not needed
+
+
+Step 1) Create hibernate.cfg.xml as Hibernate will defaultly look for this. Search for a template xml file from the jar extracted and create one with required properties.
+
+<hibernate-configuration>
+    <session-factory>
+    	<!-- SQL Dialect -->
+        <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
+	<!-- DB configuration params -->
+        <property name="hibernate.connection.driver_class">org.postgresql.driver</property>
+        <property name="hibernate.connection.username">postgres</property>
+        <property name="hibernate.connection.password">tiger</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/hibernatedb</property>
+        <!--  Drop and re-create database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">create-drop</property>
+        <property name="hibernate.cache.use_second_level_cache">false</property>
+        <!-- Echo all executed SQL to stdout -->
+        <property name="show_sql">true</property>
+      
+        <!-- Include all model classes for which schema needs to be generated -->
+        <!-- Names the annotated entity classes -->
+        <mapping class="org.thandav.hibernate.dto.UserDetails"/>
+        <!-- <property name="connection.pool_size">1</property> -->
+    </session-factory>
+</hibernate-configuration>
+
+Dialect is language to talk to db.
+
+
+Step 2) Configure domain class - can use Annotations or XML config
+Two bare minimum annotations are required to configure Domain Class so that hibernate gets clues to persist that domain class.
+@Entity - to configure class as entity class
+@Id - member variable which is Primary key (import javax.persistence.Id)
+
+Importing "Entity" from hibernate package has thrown error. Changed to below and set up in local worked fine.
+
+import javax.persistence.Entity;
+
+Step 3) 
+To use Hibernate API:
+======================
+a) Create a Session Factory - Only one object per application. Creates all sessions required during execution period. 
+b) Create a session from session factory - new session for every operation. save or retrieve data etc.
+c) create a Transaction from session. can save as many objects as required. Used to define a single unit of work.
+
+To create a session factory , we need configuration. This configuration is being looked at hibernate.cfg.xml.
+
+		SessionFactory sessionFactory = new Configuration().configure().buildSessionFactory();
+		Session session = sessionFactory.openSession();
+		session.beginTransaction();
+		session.save(<object>);
+		session.getTransaction().commit();
+		session.close();
+
+
+hbm2ddl:
+========
+	<!--  Drop and re-create database schema on startup -->
+        <property name="hibernate.hbm2ddl.auto">create-drop</property>
+
+create -> Hibernate drops and re-creates schema on start up. When we are building new session factory out of new configuration, then hibernate re-creates entire schema by looking into all domain objects. Useful during development phase.
+
+update -> Makes a change when a change is found in model. Updates existing table.
+
+	<!-- Echo all executed SQL to stdout -->
+        <property name="show_sql">true</property>
+
+Annotations:
+-------------
+@Entity(name="user_details")
+@Table(name = "UserDetails") -> creates database table with this name (import javax.persistence.Table)
+
+So, table can be created using both ways as above. We will know difference when writing HQL. Entity name property creates a completely new entity where table name property creates table for entity.
+
+@Column(name = "xxxx") -> creates with column name.
+
+We can specify @Id, @Column annotations to Getter methods instead of actual member variables as well. Additional features like additional text to data can be added in getter methods.
+
+@Basic -> Treats column as field and apply persistance defaults. This is the default behavior too. Fetch and Optional properties are present for this annotation and used when those needs to be set.
+
+For hibernate to ignore a variable, make it static or transient.
+
+@Transient -> Informs hibernate to ignore the field with this annotation even though it is present in model class.
+@Temporal -> Needs property, TemporalType.DATE. If variable is declared as Date, it will be saved as timestamp in postgres db. To save only date, use temporal.
+@Lob -> Creates data type as blob or clob based on data type. This is helpful when huge amount of text is going to be present for a field as default might not allow all of that. (postgres varchar default is 255).
+
+Primary key is must if creating schema just with annotations atleast, else "No identifier specified for entity" errors will happen.
+
+Get data back from db:
+----------------------
+session.get(<Model.class>,<primarykeyvalue> ) -> Used to get data from database. No need of select * from <>. Hibernate <Model.class> to generate an object and map data from database. If <primarykeyvalue> is not actually present in table, errors might be thrown.
+
+primary keys:
+-------------
+Types: natural and surrogate keys
+Natural keys -> A particular value is present for business reason in data,  needs to be mandatory and not duplicate. (Like email id for registration). We have to provide data to hibernate in this case.
+Surrogate keys -> No business significance but is added to table as primary key since no other rules can be present to treat data as unique. Hand it to hibernate so that it can generate automatically. 
+Use @GeneratedValue annotation for this. This property has different strategies present. AUTO, IDENTITY, SEQUENCE, TABLE(Hibernate creates a separate table and uses that for generating primary key). Eg: @Id @GeneratedValue(strategy = GenerationType.AUTO)
+
+Embedding Objects:
+------------------
+If a class uses another class as one of its properties?
+a) Separate columns - Treat members of class referenced inside current class as also members of current class. This works fine if referenced class is of 'Value' type.
+
+Types of objects in Hibernate:-
+Entity - Independent and provides meaning about itself. Use @Embedded annotation for that particular member variable. User object -> Address object
+Value - Use @Embeddable annotation on top of this clas. Has data but does not has meaning on its own. Why not implement with Entity object. Address object.
+
+If a different column name is needed than variable name, we can declare @Column inside Value object.
+What if we want homeAddress and officeAddress for User? They have to use same Value object. Using in this way, causes problem as the column name already exists and errors are thrown.
+
+@AttributeOverride(name="xxx", column = @Column(name="xxx")) -> To override and give new column name
+@AttributeOverrides -> To override multiple columns, declare multiple @AttributeOverride annotations with properties inside this annotation.
+@EmbeddedId -> Use this in ur object if combination of fields present in another object is primary key in this object. Embedded object is primary key. AttributeOverrides can be used too.
+
+What if we have to track all addresses user lived earlier?
+In this case we have to create a new Address table with userId and associate User object using userId as we do not know how many columns are needed for Address before hand.
+
+@ElementCollection -> For collection object to be persisted by Hibernate. To be included as separate table.
+Table is created with <Class>_<membervariablename>. Primary key is created with <Class>_<PrimarykeyofCurrentclass>
+@JoinTable(name="xxx") -> Declare on top of member variable to change auto generated table name.
+@JoinTable(name="xxx", joinColumns = @JoinColumn(name="xxx")) -> Changes the name of join column.
+To have collection an unique key as well, use ArrayList to declare member variable. This is preferred way to have indexes/ids/primary key for collection type as well. This cannot be achieved using Set collection type.
+@CollectionId(columns = {@Column(name="xxx")}, generator="hilo-gen", type= @Type(type="long")) -> Not a JPA annotation. Specific to Hibernate. To have a primary key for table created from collection type member variable. This column name is not actually present in domain class declared as collection.
+@GenericGenerator(name="hilo-gen", strategy="hilo") -> Common generator type used by Hibernate. Declare on top of @CollectionId. Specific to Hibernate. "hilo" strategy has been deprecated, used "sequence" and worked fine.
+
+Proxy objects:(Very Important: Underlying implementation in Hibernate)
+--------------
+Explains fundamentals of Hibernate
+If we do a session.get on UserDetails, List of addresses which is present as member variable are not fetched by default.
+If we issue user.getListOfAddresses(), then Hibernate makes one more call to database to fetch those details.
+This strategy is called Lazy Initialization. It means that do not initialize entire object but initialize only first level member variables and you initialize lists only when you access them (w.r.t to Address in User details).
+
+Why? -> There is no use to fetch all information if it is not being used. It might take a lot of time to get collection information.
+
+The opposite of lazy initialization is Eager initialization, this can be configured as well. With this, lists will be fetched as soon as user info is obtained. This takes lot of resources, time.
+
+How? -> When user.getListOfAddresses() is being called, all the information is fetched. This is done by H2 using Proxy class. Proxy is a dynamic sub class of actual class.
+****Refer Photos****
+
+When session.get(<User>,xx) is done, Hibernate does not use User class to get all information, it cleverly creates a Proxy User class which is subclass of User class and has same methods.
+
+All first level values are first filled in Proxy class and this is handed to code, we do not know because both will have same methods. 
+getId() might call parent.getId() from proxy which would do same action.
+When user.getListOfAddresses() is called, proxy class will have call to database to get all Address information and then it will have parent.getlistOfAddresses() using which info will be passed to application.
+
+No need to worry about object obtained, proxy is sub class of User class.
+Proxy makes call to database and gets records just in time and then calls parent class methods to display data.
+
+So, if close session and then try to access list of addresses error will be thrown as Proxy class is unavailable. We can make this work by,
+
+Fetching collection eagerly, Add property @ElementCollection(fetch=fetchType.EAGER). Now we can access attributes like size of list even after session is closed.
+ 
+Due to adding this property, only this collection gets eagerly. If there is another collection, it is still obtained lazily.
+
+Entity inside another Entity:
+=============================
+One-to-One mapping:
+-------------------
+hibernate.cfg.xml will have list of Entity classes as mapping tags inside it.
+To have one-to-one mapping, add Vehicle class inside User class.
+@OneToOne -> This establishes one to one mapping. We have to set vehicle to user as well. User table will have vehicle_vehicleid which maps to vehicleid of Vehicle table.
+User table is created first without vehicle id and once insert happens into vehicle table, that id will be updated to user table.
+@JoinColumn(name="vehicleid") -> To change column name vehicle_vehicleid.
+
+One-to-many mapping:
+--------------------
+@OneToMany -> Establishes one to many mapping. Declare collection 
+private Collection<Vehicle> vehicles = new ArrayList<Vehicle>();
+
+@OneToMany(cascade={CascadeType.ALL}) -> Changed like this to avoid Transient errors faced.
+
+This creates new table userdetails_vehicle with 2 columns userId, vehicleId. each userid is mapped to all of vehicle ids.
+@JoinTable(name="USER_VEHICLE", joinColumns= @JoinColumn(name="User_id"),
+	inverseJoinColumns = @JoinColumn(name="Vehicle_id"))
+
+Reverse relationship is possible here.
+Define User in Vehicle class.
+@ManyToOne -> Estabishes many to one mapping. Many vehicles will have one user.
+
+Instead of having relationship getting created in different table and that that table tracks vehicles against users, we can add userid to vehicle table so that same can be achieved. To do this,
+
+User Class:
+
+@OneToMany(mappedBy="user")
+private Collection<Vehicle> vehicles = new ArrayList<Vehicle>();
+
+Vehicle Class:
+
+@ManyToOne
+@JoinColumn(name="USER_ID")
+private UserDetails user;
+
+Many-to-many mapping:
+--------------------
+This should have mapping table.
+Use Case is that vehicle is rental. 
+
+User will have Vehicle Collection and Vehicle will have User Collection.
+
+@ManyToMany
+private Collection<Vehicle> vehicles = new ArrayList<Vehicle>();
+
+@ManyToMany
+private Collection<UserDetails> users = new ArrayList<UserDetails>();
+
+Due to this, USER_DETAILS_VEHICLE and VEHICLE_USER_DETAILS tables are created with userid and vehicle id columns. Hibernate does not know to map by default.
+
+To map both into one table, pick one of classes to specify that it will have mapping. Add mappedBy property to @ManyToMany annotation in other class.
+
+@ManyToMany(mappedBy="vehicles")
+private Collection<UserDetails> users = new ArrayList<UserDetails>();
+
+------------------------------------------------------------------------------
+Assume @ManyToOne mapping to User from Vehicle. If vehicle is new and there is no User present yet for it, then getUser() for vehicle throws error. To avoid this, use
+@NotFound(action=NotFoundAction.IGNORE) -> Hibernate's annotation.
+
+Hibernate Collections:
+----------------------
+Bag Semantic - List/Array List
+Bag Semantic with ID - List/Array List
+List Semantic(This can be ordered) - List/Array List
+Set Semantic - Set
+Map Semantic - Map
+
+Hibernate uses one of these semantics to maintain collection.
+
+Cascade:
+========
+
+@OneToMany 
+private Collection<Vehicle> vehicles = new ArrayList<Vehicle>();
+
+If we just issue session.save(user), we will face an issue that object refers unsaved transient instance which means that user object is trying to save without saving dependent information. As vehicles are entities, this does not happen by default. If user has 100 vehicles, we have to issue session.save(vehiclex) for all of those. This can be avoided using Cascade.
+
+@OneToMany(cascade={CascadeType.PERSIST}) -> This is classic example for Cascade. No @ManyToOne relationship exists. 
+
+By giving Cascade type of PERSIST, H2 saves any Entity information inside another Entity when top level Entity is saved.
+
+Use session.persist(user) instead of save. (To be in par with CascadeType.PERSIST)
+
+CascadeType.REMOVE -> performs cascade for delete operations.
+CascadeType.ALL -> All operations that happen to Top level Entity are applied to Entity inside it.
+

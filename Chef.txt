@@ -1,0 +1,8 @@
+C:\Users\hero1\VirtualBox VMs\ubuntu\ubuntu.vdi
+
+Ubuntu ISO: C:\Users\hero1\VirtualBox VMs\ubuntu
+
+Name of Os: chef
+Passwd: Admin123
+
+askubuntu.com

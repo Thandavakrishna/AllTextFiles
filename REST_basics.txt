@@ -1,0 +1,42 @@
+
+REST uses HTTP requests to exchange data. 
+Client sends HTTP request and server provides HTTP response.
+SOAP web service uses SOAP protocol that uses XML message format.
+REST web service does not have a fixed protocol. Can use XML, JSON, text.
+Service definition: Need to know definition of Service to know about operations. Usually there is little/no documentation for RESTful Web service. WADL is like WSDL but not that popular and strictly followed.
+SOAP has WSDL which contains service definition and that needs to be adhered to.
+
+There are no rules, no protocol standards, no communication/message standard, no service definition standards for RESTful web services.
+SOAP web services follows SOAP web service specification. If one of rules are not followed, it is not a SOAP WS.
+There is no REST web service specification. 
+Representational State Transfer is an architectural style. Consists of co-ordinated set of criteria and constraints to guide in app architecture. 
+REST+Web Services = REST web services. No committee to provide guidelines.
+
+HTTP is a protocol to exchange data which is hypertext. Structured form of text which contains links to other text which are called hyperlinks.
+Common and popular way to write hypertext is HTML.
+
+Resource Locations: REST API has resource based address. They are independent of server side implementation.
+
+HTTP Methods/Verbs:
+===================
+GET
+POST -> Submit information to server.
+PUT ->  Submit information to server.
+DELETE
+
+SOAP usually does all requests using POST.
+
+Metadata:
+=========
+When a request is sent using HTTP, additional data which is metadata is sent as response headers along with response body. One of the useful metadata/response headers is HTTP Status code.
+
+Content-type provides metadata about format of message.
+
+Content Negotiation - Coming later, but is about negotiation b/w client and server about the content type client can consume.
+
+Designing RESTFUL URIs:
+=======================
+Resource based URIs -> Try to think analogous to static html/web pages. (Drop .do or .html at the end). Should be nouns usually. Eg: /profiles/{name}
+Resource relations -> Resources dependent on other resources. Eg: /messages/{messageId}/comments/{commentId}
+
+

@@ -1,0 +1,165 @@
+Inheritance:
+============
+***Check Photos***
+
+@Entity
+public class TwoWheeler extends Vehicle
+
+@Entity
+public class FourWheeler extends Vehicle
+
+If subclasses are declared with @Entity, H2 will defaultly implement "Single Table" Strategy.
+
+DTYPE column -> Discriminator type. Vehicle table will have this column which stores Class type. 
+
+Also, values specific to sub class will be stored in that column against that object. (For TwoWheeler row, SteeringHandle column will have data and for FourWheeler row, Steeringwheel column will have data).
+
+If any classes extend this Two/FourWheeler classes, all of those individual properties get created as columns as well.
+
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE) -> Annotate super class with this. This is implemented by default even though not specified.
+@DiscriminatorColumn( name ="xxx", discriminatorType = DiscriminatorType.STRING) -> Annotate super class with this. To change dtype column name and Discriminator type(string, integer, character)
+@DiscriminatorValue("xxx") -> Use in sub class so that discriminatorType column will have this value.
+
+This is least normalized as it can carry null values for most columns.
+
+Table per class Strategy:
+-------------------------
+No need of DiscriminatorColumn here.
+
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS) -> Data is inserted into separate tables. Parent class properties are inherited and they form columns in child tables along with child class properties.
+
+If parent class has @GeneratedValue for @Id, this gets inherited as well to the child classes.
+
+Advantage is no Discriminator required, easier to identify, normalized form with no additional columns.
+
+Elegant way of designing tables.
+
+Inheritance With Joined Strategy:
+---------------------------------
+@Inheritance(strategy=InheritanceType.JOINED) -> Parent table will have information related to child tables as well for the inherited properties. Child class specific properties go into child tables. One reference will be present to parent table from child table using foreign key.
+
+Data should be obtained using joins on parent and child tables.
+
+select * from vehicle join TwoWheeler on vehicle.vehicleId = TwoWheeler.vehicleId
+
+More normalized way.
+
+CRUD operations:
+================
+First Level data is always EAGER fetch using PROXY class. So first level data can be accessed even after session is closed.
+
+session.get(<class>, <pkey>) -> Fetches an object. Needs to be casted as particular domain object.
+session.save(<Object>) -> Create
+session.delete(<Object>) -> takes object as parameter. Need to get new object if there is none available in memory already.
+session.update(<Object>) 
+
+Use hbm2ddl.auto as "update" for get, update, delete ops.
+
+Transient, Persistent and Detached objects:
+============================================
+
+If an object is instantiated but not passed to session.save() method, then Hibernate does not know to save that object. This is Transient object. No tracking is performed.
+
+Once object is given to session.save(<object>), it becomes Persistent object. H2 tracks this object.
+
+Tracking means even though there is change to Object's data after session.save() and without performing save() again, H2 tracks changes and performs updates to data. Before committing transaction and closing session, only last state of object is applied to table data and it is state of database.
+
+H2 intelligently performs least no.of update stmts. So, if a property on object changes 10 times after save(), only last property change is fired as update stmt.
+
+Once session.close() is issued, object becomes Detached. Changes are not tracked anymore. This object was persistent/tracked by H2 previously.
+
+**check Photos**
+
+Persisting Detached objects:
+-----------------------------
+When we display data to user, user might make changes and we need to save updated data again. Since timing at which user performs updates is unknown, it is not good practice to open transaction and session all the time.
+
+This leads to use case of Persisting Detached object to perform update operation.
+
+This kind of user updates are usually performed in separate method or class. Pass changed data.
+
+Once update method is called(after opening a new session, transaction), detached object becomes persistent again. Now the changes will be made, object becomes persistent and any changes after update() method before closing transaction, session are still updated.
+
+Also, if we issue update(<object>) again by opening a transaction, H2 fires update query even though there are no updates as it is unaware of changes by default.
+
+To handle this, annotate Entity class with @org.hibernate.annotations.Entity(selectBeforeUpdate=true). With this, one more select is done to identify state of data in database before performing update. Use when only data changes are very less since one more select is fired.
+ 
+HQL and QueryObject:
+===================
+We can obtain data related to one primary key value using session.get(<object>, <pkey_value>). But, to get bulk amount of data ??? Use HQL.
+
+In HQL, think about Objects rather than Tables like SQL. We need to use Query object.
+
+session.createQuery("from <class>") -> Query object is created, returned. Save it to Query from hibernate(not JPA). No select * is required. Instead of record set, list of Entities are returned.
+where <property of Class> -> Use Class members instead of column name.
+
+Eg: Query query = session.createQuery("from UserBasic where userId > 5");
+
+Using this we cannot pull specific columns/properties and cannot get data in pagination mode (get a set of users and then fire a query to get another set of users).
+
+Pagination can be done by setting first record to be pulled and selecting no.of records.
+query.setFirstResult(5);
+query.setMaxResults(4);
+
+Hibernate: select userbasic0_.userId as userId1_0_, userbasic0_.userName as userName2_0_ from UserBasic userbasic0_ limit ? offset ?
+
+Specific columns:
+-----------------
+Select <property of Class> from <Class> where <property> xxxx
+
+If more than a property is accessed, list of lists are returned.
+
+We can also have select like below.
+Query query = session.createQuery(select map(username, userid) from UserBasic).
+
+Aggregation functions can be applied to Query as well. Most SQL syntaxes might work but only difference is to use Class name/properties insteadof Table/Column.
+
+**Try this**
+
+Parameter binding:
+------------------
+Query query = session.createQuery("from UserBasic where userId > "+ userInput); -> This query is highly exposed for SQL injection.
+String userInput = " 5 or 1 = 1 "; -> This would return data of entire table.
+
+So, we have to do parameter binding/substitution to avoid this case.
+
+Query query = session.createQuery("from UserBasic where userId > ? and userName = ?"); -> '?' is used to do parameter binding
+query.setInteger(0, Integer.parseInt(userInput)); -> 0 indicates that it is to be substituted for 1st variable
+query.setString(1, userName); -> 1 indicates that it is to be substituted for 2nd variable
+
+Second way:
+Query query = session.createQuery("from UserBasic where userId > :userId and userName = :userName");
+query.setInteger("userId", Integer.parseInt(userInput)); -> 2nd form of setInteger method, takes String, int as method parameters.
+query.setString("userName", userName);
+
+Named Queries:
+--------------
+Better to consolidate all queries at a single place so that it is easier to find rather than from inside code. Can be acheived using Named Queries at Entity level so that this can be used across entire application.
+@NamedQuery(name="UserDetails.byId", query = "from UserBasic where userId > ?") -> name sytax as <Entity>.<relevantPropName>
+
+Another Advantage is we can use SQL in query property directly.
+@NamedNativeQuery(name="UserDetails.byName", query="select * from user_basic where userName = ?",resultClass=UserDetails.class) -> resultClass is required as H2 is unaware of result class type.
+
+Three ways to get objects from database in Hibernate:
+=====================================================
+1) Configure Entity objects and doing session.get() -> limited control
+2) HQL, can use where clauses -> to have more control on data returned
+3) Criteria API
+
+Problems with HQL:
+------------------
+HQL is similar to SQL.
+Real life apps will have complex queries and as query grows it becomes tougher to maintain. Parameters and constraints can become difficult as well.
+
+Criteria API:
+-------------
+Criteria criteria = session.createCriteria(UserBasic.class);
+criteria.add(Restrictions.eq("userName", "User 1"));
+List<UserBasic> UsersList = (List<UserBasic>)criteria.list();
+
+Criteria is deprecated. Use CriteriaBuilder.
+
+CriteriaBuilder builder = session.getCriteriaBuilder();
+CriteriaQuery<UserBasic> criteria = builder.createQuery(UserBasic.class);
+((Criteria) criteria).add(Restrictions.eq("userName", "User 1"));
+
