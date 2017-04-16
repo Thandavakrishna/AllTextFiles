@@ -151,7 +151,7 @@ Problems with HQL:
 HQL is similar to SQL.
 Real life apps will have complex queries and as query grows it becomes tougher to maintain. Parameters and constraints can become difficult as well.
 
-Criteria API:
+Criteria API: (Important feature)
 -------------
 Criteria criteria = session.createCriteria(UserBasic.class);
 criteria.add(Restrictions.eq("userName", "User 1"));
@@ -163,3 +163,86 @@ CriteriaBuilder builder = session.getCriteriaBuilder();
 CriteriaQuery<UserBasic> criteria = builder.createQuery(UserBasic.class);
 ((Criteria) criteria).add(Restrictions.eq("userName", "User 1"));
 
+Criteria supports chaining. Multiple restrictions can be added in a single stmt.
+
+Restrictions:
+-------------
+Like where clause.
+
+% can be used, it has lt, gt, eq, like, between properties. Can be checked from Restrcitions.xxxx
+Has multiple options as like SQL.
+
+All Restrictions added to criteria are considered in conjunction and treated as 'AND' condition.
+
+criteria.add(Restrictions.or(Restrictions.between("userId", 0, 1),Restrictions.between("userId", 3, 10))); -> for 'OR' condition.
+
+.addOrder(Order.desc("userId")) -> add this to criteria to perform sorting.
+
+Projections:
+-----------
+Aggregate functions or grouping functions
+
+Can be used to get a specific property of class too.
+
+Criteria criteria = session.createCriteria(UserBasic.class)
+			   .setProjection(Projections.property("userId"));
+
+Projections.count, sum etc -> Aggregation fns
+
+Query By Example:
+-----------------
+Handy when having too many properties and too many criteria. This reduces lot of Restrictions to be added to criteria.
+
+1)Create an example object for which data needs to be accessed and set data for known properties.
+2)Create Example from hibernate using example object.
+3)Add this Example to criteria.
+
+Two things ignored when using Example - 1) If property set on example object has null values, 2) If property set on example object is primary key.
+
+excludeProperty -> Can be used to exclude property set. Example.create(<object>).excluseProperty(<membervariable>)
+enableLike() -> Can be used if properties set uses '%'.
+
+
+Hibernate Cache:
+================
+Multiple ways can be done. 
+
+1) First Level cache - Session  -> Implemented by default. Might not be present for long time. Gets cleared once session is closed.
+Hibernate intelligently checks data changes and fetch -> fires minimum no.of queries against database.
+
+A row of object data is accessed in a session using session.get(), session is closed. Again same row of object data is accessed in different session, then H2 has to run another select query as 'default/first level cache' is per session. Thru second level cache, this can be avoided.
+
+2) Second Level cache
+	- Across sessions in an application. 
+	- Across applications. All apps must use H2.
+	- Across clusters. All apps must use H2.
+
+
+<property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+
+Check org.hibernate.cache package. OSCache, EhCache etc are avaiable. Set Provider class of those to property in hbm.cfg.xml
+
+<property name="cache.provider_class">org.hibernate.cache.EhCacheProvider</property> -> Download EhCache jar and add it to library.
+<property name="hibernate.cache.use_second_level_cache">true</property> - Should be specified H2 to explicitly enable second level cache
+
+Entities are not cached at second level by default. Add these two annotations to do same.
+@Cachable -> Add to entity class.
+@Cache(usage=CacheConcurrencyStrategy.READ_ONLY)  -> Caching strategy. READ_ONLY -> entity is read-only. App does not write back anything into db.
+							     READ_WRITE -> H2 keeps track of data changes and updates cache accordingly.
+							     NONSTRICT_READ_WRITE -> Does not strictly enforce check. Can use some data from cache. Dont use
+							     TRANSACTIONAL -> At transaction level, does not provide significant benefit.
+
+
+What happens in case Query objects are used in 2 different sessions to obtain same data???
+H2 still makes 2 calls to database.
+
+Query cache is not enabled if second level cache is enabled. Query level cache is different from second level cache, results of query are not stored in same place in cache as it would store results of session.get() which it has cached in second level cache.
+
+3) Query Cache
+<property name="hibernate.cache.use_query_cache">true</property> -> Add this in hbm.cfg.xml
+query.setCacheable(true) -> Make query cacheable so that to tell H2 that you use it subsequently.
+query2.setCacheable(true) -> This is required as well to inform to look at query cache already available.
+
+setCacheable is doing two things
+a) Connect to database and pull up records and set query cache if in case query cache is not available.
+b) Pull up data from query cache if values are already present.
