@@ -1,0 +1,64 @@
+print 1 to 100 without for loop:
+================================
+
+@RestController
+@RequestMapping("/loop")
+public class LoopController {
+
+    @RequestMapping(value = "/", method = RequestMethod.GET)
+    public ResponseEntity printNumbers(){
+        print1to100();
+        return (ResponseEntity) ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    public void print1to100(){
+        int[] array = new int[101];
+        try{
+            printWithrecursive(array, 1);
+        }catch(ArrayIndexOutOfBoundsException e){
+        }
+
+
+    }
+
+    private void printWithrecursive(int[] array, int index) {
+        array[index] = array[index-1] + 1;
+        System.out.println(array[index]);
+        printWithrecursive(array, index+1);
+    }
+
+
+}
+
+
+
+
+Check the output printed on console:
+====================================
+private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+private final ByteArrayOutputStream errContent = new ByteArrayOutputStream();
+
+@Before
+public void setUpStreams() {
+    System.setOut(new PrintStream(outContent));
+    System.setErr(new PrintStream(errContent));
+}
+
+@After
+public void cleanUpStreams() {
+    System.setOut(null);
+    System.setErr(null);
+}
+sample test cases:
+
+@Test
+public void out() {
+    System.out.print("hello");
+    assertEquals("hello", outContent.toString());
+}
+
+@Test
+public void err() {
+    System.err.print("hello again");
+    assertEquals("hello again", errContent.toString());
+}

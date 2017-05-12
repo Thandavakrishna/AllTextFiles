@@ -1,0 +1,123 @@
+Scopes:
+
+You Don't know JS by Kyle Simpson
+
+JS has function scoping but not block scoping like Java. There are other ways to define scope but most part if only function scoping.
+Global varibles are bad. This may cause name clashes in namespace.
+
+IIFE - Immediately invoked function expressions are best to execute functionality and avoid global varibles, global functions.
+
+We can do a write operation without declaring a variable but cannot perform read operation against undeclared variable.
+Undeclared variable is in global scope.
+
+Global object or root object stores all global variables. It depends on RE. In Firefox, global object is usually "window" that has loaded page and that runs JS.
+
+In node, Global object is global. So global variables are essentially properties on global object.
+
+Compilation and Interpretation:
+
+Browser does below
+1) compilation step to look for things that it needs to execute but not generate intermediatory binary code. This does not look at execution. only LHS.
+2) interpretation step that loads source code into browser. This does not look at declarations but performs assignments.
+
+compiler examines code and registers variables for all global variables, functions(as fns are objects which are created with variable name) & variables under function scope, paramters for functions in function scope.
+
+compilation is book keeping step that keeps track of above information which has scope chain.
+
+Interpretation step works on the variables that are present in bookkeeping and works on their scopes. It just acts on those variables which are already registered.
+
+console is global variable created by JS implicitly. Code looks for variables that are not present in inner scope by going one level up and if not found one more level up and goes on till it hits global scope.
+
+If there is an undeclared variable(without var keyword) doing a write operation in a function scope, since it is not declared, interpretor cannot find in that scope. It looks up all the way thru global scope and does not find. Now, interpretor (Interpretor assumes) creates that variable in global scope instead of function scope.
+
+****Always use var to declare variable.*****
+
+console.log(a);
+var a = 10;
+
+As JS takes two passes across code, in compilation step all variables are registered with their corresponding scopes. When interpretor executes above code, it does not throw error as in case of undefined variable since variable is present in overall scope but just does not value yet, it prints "undefined".
+
+After compilaton step, all variables(actual variables and functions) are registered and treated as if they are hoisted in the top. It does not matter if variable declarations are present after the definitions. This concept is called Hoisting.
+
+Function hoisting helps when FnA calls FnB and FnB also calls FnA. (FnA should not execute if FnB is not declared before FnA call)
+
+Hoisting does not work for Function expressions. Compiler registers only variable but does not what type it is. When interpretor tries to run the function, it would have value "undefined".
+
+Function declaration results in a function object being created in compilation step itself.
+
+Modes in which JS can run : 1) normal & 2) strict (From ECMA script5)
+Undeclared variables gets created in global scope. Inorder to prevent undeclared variables getting created, "use strict" so that it throws error. This can be applied at top(global scope for that js file) or inside a function(only functional scope).
+
+Many other common sense guidelines are applied with strict mode.
+
+==========================================================================================================================================================
+Closures:
+
+//code
+var a = 10;
+
+function outer(){
+  var b = 20;
+  var inner = function(){
+    console.log(a);
+    console.log(b);
+  };
+   return inner;
+}
+
+var innerFn = outer();
+
+innerFn();
+
+	In above code, scope of b is within outer. outer function gets assigned to innerFn variable and we are calling innerFn() where outer does not exist anymore. innerFn is containing only anonymous function returned from outer. 
+
+When JS creates function object, it remembers scope chain. In above code, inner contains not only function object but also snapshot of scope information(snapshot points to copy of actual variables not another duplicate)
+
+so the innerFn() can run in a complete different file and it does not need to know global variables. This is called as JS closures.
+
+Each time function is executed, new copies of scoped variables gets created.
+
+Once function execution completes, garbage collector clears it. 
+
+JS is single threaded. When a page is opened on browser, a thread gets created. So wait or pause does not exist. 
+
+But we can use JS in built function - setTimeout(fn,time in ms) for code to work after a delay. Only that waits and execution proceeds with rest normally.
+
+Due to this, execution order changes. Code present after time out gets executed first. This concept is called as callback.
+
+Here closures concept works because snapshot of fn function is being sent to built-in setTimeout function(present somewhere else, this does not know what variables are required without closures) to perform operation.
+
+closures in modules: As there are no public and private accessors in JS, we need to make variables to be within particular scope and cannot be accessed by others. This is performed using closures and pattern is called module pattern.
+
+Closures in async Callbacks: setTimeOut queues up calls of function for the amount of time specified as second parameter.
+
+var i;
+
+var print = function(){
+   console.log(i);
+}
+
+for(i=0;i<10;i++){
+   setTimeOut(print,1000)
+}
+
+10 gets printed 10 times due to this. Reason is call to print function got queued up due to setTimeOut for a second & by that time for loop is exited with value of 10.
+
+This can be solved by creating an IIFE inside for loop and create a new variable.
+
+for(i = 0; i < 10; i++) {
+    
+	(function(){
+    		var currentValueOfI = i;
+		setTimeOut(function(){
+			console.log(currentValueOfI);
+			}, 1000);
+		})();
+}
+
+As each time function is invoked, new scope gets created. 10 instances of IIFE contains different scopes and hence values of i. Due to closures, setTimeOut function gets different value of i in each iteration stored into currentValueOfI. 
+
+Another way to do this is that we can change the syntax of IIFE to accept new variable currentValueOfI and pass i during invocation.
+
+
+

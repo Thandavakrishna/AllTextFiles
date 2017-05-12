@@ -1,0 +1,168 @@
+Features:
+
+Lightweight -> Small memory footprint
+Interpreted -> No compilation resulting in intermediate binary files, instructions are executed directly
+Object-Oriented Programming-> Modeled around objects
+First-Class functions -> Functions used as values. Like lambdas in Java8
+Scripting language -> Usually scripting languages are those whose scripts can run on runtime enviroment. Individual commands can be run or bundled into a file and can be run on RE. Eg: Shell scripting. Web browser is RE for Javascript.
+
+Web browser has HTML, CSS and JS. Browser renders HTML and runs JS.
+
+Request made from web browser to a web site -> Request to server to give that particular page-> Server responds with some HTML content -> Travels over HTTP as bunch of text/string with tags -> Browser examines all the tags (h,p,div) and converts them into objects -> Each tag becomes an object 
+<div>
+	<p> </p>
+</div>
+
+div is created as object and p is created as child object which is like a node. Browser converts tags to objects. Finally tree of objects is formed which is referred as DOM tree.
+DOM -> Document Object Model. HTML document is taken and converted into tree of objects, hence the name DOM.
+
+Browser now have DOM tree and browser renders html and builds view using it. Since HTML is static, how many ever times page is loaded, same DOM tree is returned.
+
+JS is a dynamic language. When browser gets Html, JS can be used to modify the nodes so that DOM tree gets changed and browser gets loaded with different DOM tree.
+Browser is always in sync with DOM tree. So JS is used to perform dynamic functionality on browser.
+
+Why:
+Client side web development. 
+	a) Native JavaScript -> No framework. Gets tough when functionality gets complex.
+	b) jQuery -> Framework that allows to modify DOM tree functionality on client side.
+	c) AngularJS, React, Ember
+
+Server side development -> Fairly new. Listens to user request and generate a web pages or REST API response.
+	a) NodeJS -> can build server side app like a JavaEE app. 
+	b) Express -> Used combined with nodeJS
+
+Browser extensions
+Desktop apps
+Mobile apps
+IOT apps -> Not much matured.
+
+History:
+
+Created to complement Java
+Javascript was designed for new comers to easliy use and it is very forgiving meaning if there is a mistake, interpretor does not end program as like compiler in Java. It makes assumptions and proceeds with execution. So, this is good and bad. It is a design decision.
+Standardized by ECMAScript. This provides a specification for language. Once specification is followed, any browser that can run JS can run your code. ECMAScript 5 is accepted by all browsers. 6 is still underway for browsers.
+----------------------------------------------------------------------------------------------------------------------------------------------------------------
+Setup:
+
+Nothing :) Only Web browser is enough. Firefox preferred.
+ScratchPad
+
+Variable:
+No concept of typed variables. Need not specify a type for variable. Created with var keyword.
+Primitive types -> 
+	number, -> Everything is a number (no integer or any other data type). Every number is a double-precision 64-bit value
+	string, -> Everything is a String. No character datatype. 16-bit unicode characters.
+	boolean -> true or false.
+As there is no strong typing present for variable, same variable can be used to hold a different type. Loose typing or weak typing.
+
+Declaration and definition:
+As soon a variable is declared, a value is assigned to it which is "undefined". "undefined" is a separate type which has only value "undefined".
+null is another type which has one vaule "null".
+
+undefined and null both seems absence of values or non-values. Can compare with Analogy of filling a form - field id blank vs. N/A(null). 
+null is a intentional value assigned to a variable.
+
+ECMA6 - new primitive type -> symbol. Like a enumeration in Java. Read more !!!!
+No scoping information in variable declarations. scoping is inferred from something else.(comes later)
+
+To identify the type of variables and values, can use "typeof". typeof "null" is object.
+
+syntax:- typeof <variable/value>
+
+Type coercion is type conversion to perform operations on variables of different types.
+
+== is used for comparison for most programming languages. In JS, this behaves differently. 
+Interpretor performs type conversion/coercion if values of different types are compared. Eg: 10 == "10" is true. 
+So, they came up with === operator. Always use this for comparison.(check both value and type)
+
+For IF block in JS, single parameter can be passed
+	-> If variable is number, then any non-zero value executes block.
+	-> If variable is string, then any string except blank executes if block.
+	-> If variable is boolean, then true value executes if block.
+	-> If variable is undefined or null, then if block does not run and else block runs in case any.
+This means Values of all types have an associated Boolean value.
+==================================================================================================================
+Objects:
+
+JS is not class based OOP language. Objects are not bound to a particular class as there is no concept of class in JS.
+
+Objects have properties and methods. Works more like a map. 
+Objects  
+	-> Can be created with {} literal.(called as object literal) 
+	-> Can be intialized as empty object or can provide values for multiple properties during initiation. New properties can be added later.
+	-> Properties can be accessed directly using obj.prop_name. No accessors (getters and setters), scope can be defined with a hack but usually it is public.
+	-> If property that is still not present in Object is accessed, undefined is returned.
+	-> Can query properties of Object using . and [] notations. Use [] 
+		-> Property name is reserverd word/invalid identifier.
+		-> Property name starts with number
+		-> Property name is dynamic. Variable can have property name assigned and value of that property from object can be obtained by using [].
+
+Runtime engine may not be able to optimize [] notation. 
+Dot and [] can be interchanged . Can use mix and match of these too.
+
+Object is essentially is reference to memory location in heap of browser. Hence variable used for object is reference. Another variable can point to same object.
+
+Variables can be assigned to primitive types, objects.
+Objects can have property that is pointing to another object. That another object can have property to some other object. Nested Objects.
+
+=== operator in case of objects checks if both variables point to same location.
+To remove a property from object, object.property=undefined can be used. But when object is queried, still property shows value as undefined. So use 
+delete <object.property>
+
+Arrays:
+If you access array where index is out of bounds, you get undefined. Can add elements to array with index.
+JS array is essentially JS object. We are querying object.property. Array indices are properties . Can use [] operator but not . as indices are numbers.
+Array[0] is same as Array["0"] because JS performs type conversion as to query an object.
+Interestingly, we can add string as index for variable type of array but it does not adds up to length and it goes to object. 
+Length of array is greatest index + 1.
+Wrapper objects:
+JS has equivalent object for primitive data types. So we can query length of variable of string type.(Object gets created for a fraction of second when length is queried from string)
+
+String
+Number
+Boolean
+Symbol
+===================================================================================================================================
+Functions:
+
+function keyword.
+If you call a function with less no.of parameters than expected by declaration, parameters that are not passed are treated as "undefined". No error is thrown by compiler like Java.
+If more no.of parameters are passed to function than expected by declaration, additional parameters are ignored.
+Method overloading is not possible due to this like Java.
+Function can send value using return keyword. No type needs to be mentioned. If return "" is given or nothing is present inside function, undefined is returned.
+Function is a value in JS. So function itself gets assigned to variable. 
+Can define function using function expressions created using variable. variable() can be used to invoke function as JS checks if value of variable is a function.
+Anonymous function expressions can be used to create functions. Variable is used to create function but does not have function name.
+
+Functions can be called as arguments to another function. If first function passed as argument has a parameter, second function declaration would contain that parameter. While invoking first using second, we can specify 
+fn2(fn1, paramter_fn1); 
+
+We can add function as property to object. This is how JS objects contains methods. Different from Java.
+
+If an object contains function that uses a property of same object name, code becomes fragile. If object1 is assigned to object2, checking value of function might show different result as object1 can get assigned to a different value.
+
+Use "this" keyword in order to use that particular instance of object.
+
+There are 2 implicit/default arguments for functions. "arguments" is used to access all arguments passed to function. "this" is second implicit argument.
+Arguments is an object but not an array.
+
+Functions are also objects. JS implicitly creates an object when a variable is created as function.
+========================================================================================================================================
+In built objects in JS:
+
+Arrays -> default functions -> push(element) -> Adds element at end of array.
+			    -> pop() -> removes element at end of array.
+			    -> unshift(element) -> Adds element at start of array.
+			    -> shift() -> Removes element at start of array.
+			    -> forEach(function(item, index, array)) -> forEach accepts a function as argument and executes it for each element of array. All three parameters are implicitly called and can be used for operations in function.
+Math -> Used for mathematical operations.
+Date -> Date operations
+
+Next steps:
+Scopes and closures
+Objects and Prototypes
+Asyncronous Javascript - Callbacks and promises
+Client side frameworks
+Server side frameworks
+
+

@@ -1,0 +1,128 @@
+JS is OOP oriented language.
+
+prototype is a like a blue print.(class in Java) Can create objects using these.
+
+Can access properties in an object using . notation or [] notation.
+
+Shortcut is provided if functions are used to create objects by taking some function arguments which are supposed to be values for object properties. In this case, creating an empty object and returning that object after values are populated are similar steps for any no.of objects we create using functions.
+
+Shortcut is to use "new" keyword and call function that creates objects. JS treats this like a constructor and you can use "this" keyword to refer to that particular object and add properties that gets implicitly created due to constructor. "this" object is implicitly returned as well.
+
+There is no way to identify if a particular function is meant to be a constructor from its code. It is the way how function is called and JS knows that it is constructor. If we access this particular function for other purposes, it will not work. So, the convention to distinct normal functions and functions meant to be constructors is by creating them with Capital letter on start of function name(Initial-case).
+
+Calling a regular function that creates and returns objects in first & last pretty much works in constructor way of creating object.("this" object's implicit creation and return are not used in this case). Not ideal way to use.
+
+Calling a constructor function without new keyword doesn't work ! No new object gets created and properties gets added to "this" at that particular time which is inherited from parent scope(could be treated as global object), and the return value is "undefined".
+
+this:
+======
+4 diff ways to call functions.
+
+Regular way. Direct function/Function expression
+Function as property of object.
+Constructor way. 
+"Mysterious" -> Execution context 
+
+There is some context in which functions execute in other programming languages too. stacktrace contains values required by that context. JS also works same way.
+
+"this" is one of variables of that execution context which is present for all 4 types.
+
+Two default arguments to every function call - arguments and this.
+
+Method1: Calling standalone functions directly.
+this reference: global object. (Depends on Runtime Environment. In browser, it is window object. In node.js, it is global object)
+
+Method2: Calling functions as property of an object reference.
+this reference: The object reference.
+
+Method3: Calling standalone functions using 'new' keyword.
+this reference: The newly created object.
+
+If a function to be object uses "this" to add property values and contains a function as property of it which also uses "this", references for both are different. First "this" is new object as it gets called in constructor way and second "this" refers to the object on which it is called as property.
+Only the function property can be assigned as property to another object. When that function is called from another object, it might not have property on which second "this" is operating and it is "undefined".
+
+To avoid this situation, what if property used by "this" when called from second object can be pointed to actual object that has property? It is 4th method.
+
+Function is an object in JS that has a default out-of-box property which is a function again and it is "call".
+
+foo.call();
+foo();
+
+These are basically same, but "call" accepts object as proerty. In above case when you pass object A that has actual property to object B to which function property got assigned like B.fn.call(A), now property of A gets modified achieving the purpose.
+
+==============================================
+Prototypes:
+===========
+
+JS objects don't "own" methods. They just have properties, and any property could be a function.
+If property is a function and object can be created in constructor way, if thousand objects are created, then thousand copies of function gets created which is not a good way. This can mean that constructors are not good enough.
+
+How functions get processed by JS engine:
+Every time a function is created, turns out that 2 objects gets created. One object is function itself which is given(as JS functions are objects) and second object is prototype. JS interpretor creates a property that is pointed to prototype object. 
+
+fnname.prototype
+
+This happens for all functions even if function does not create objects.
+
+When "new" keyword is invoked on function, an object gets created out of function. Until now, prototype object sits idle on function. But object which is created now has "_proto_" property that points to "prototype" object of function. All new object instances of functions has this _proto_ property that points to same "prototype" object of function.
+
+When an object is queried for a property, JS engine first looks if there is property with same name. If it is not present, then under the hoods JS engine checks prototype object for that property. If it is present for prototype object, then value of property is returned.
+
+Once a method/function is created as property in prototype object of an object, all new objects that get created using Constructors with new keyword using will have that behavior. This way behaviors are created that can be applied to multiple objects.
+
+We can define behaviors on prototype at a later point as well. The objects which get created using Constructor will inherit prototype object properties on runtime. Hence they can access behaviors once it added to prototype. This is different from classes in Java where all functions/properties are defined only once.
+
+__proto__ is usually called as dunder-proto.
+
+prototype object has "constructor" property that points to function object. Using this, we can identify the function that was used to create object.
+
+newObject.__proto__.constructor
+
+These are references which JS creates when object is created and can be modified directly. Hence not recommended way to use.
+
+Object function:
+
+In JS Runtime Env, there are global objects such as window and there are global functions as well. "object" is name of one of those global functions(JS functions are implicitly objects as well).
+
+var simple = {};
+var another = new Object();
+
+Creation of empty object using above 2 methods is implicitly same. Empty braces indirectly mean new Object()
+
+The automatically created prototype object is actually created using "new Object()". Hence, prototype of an object is actually another object that points to empty object.
+
+So due to this, every object that gets created using Constructor mode has three layers of hirerachy.
+
+obj.__proto__.__proto__ === Object.prototype;
+
+If property is set to Object's Prototype which is global function, then all objects that gets created implicitly gets that property until there is a property with same name in new objects/object's prototype.
+
+Global object's prototype has __proto__ property that points to null.
+
+Key benefits in OOP is inheritance.
+
+Two objects A, B are present. You can change B.__proto__.__proto__ which points to global Object's prototype to Constructorfnname.prototype so that B inherits the properties that are set on object A's prototype.
+
+Do some practice*******************************
+
+youdontknowjs.com -- You Don't know JS by Kyle Simpson.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

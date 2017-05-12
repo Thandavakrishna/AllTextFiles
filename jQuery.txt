@@ -1,0 +1,9 @@
+Keep all jQuery code inside <script type="text/javascript"> </script> tag.
+
+$("document").ready(function() {
+
+}); -> Gets executed when page gets loaded/ready.
+
+$("#wrapper") -> Element with Id
+$(".") -> Class
+$("a") -> applies to all anchor tags

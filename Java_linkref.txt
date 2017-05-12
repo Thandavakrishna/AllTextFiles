@@ -1,0 +1,66 @@
+Core Java:
+
+http://javahungry.blogspot.com/2013/06/top-25-most-frequently-asked-core-java.html
+
+http://java67.blogspot.sg/2013/06/how-get-method-of-hashmap-or-hashtable-works-internally.html
+
+http://javahungry.blogspot.com/2015/05/50-java-collections-interview-questions-and-answers.html
+
+https://dzone.com/refcardz/core-java
+
+https://www.tutorialspoint.com/java/java_interview_questions.htm
+
+http://stackoverflow.com/questions/3519664/difference-between-volatile-and-synchronized-in-java
+
+list of difference between StringBuffer, String, and StringBuilder in Java :
+
+1) The String object is immutable in Java but StringBuffer and StringBuilder are mutable objects.
+
+2) StringBuffer is synchronized while StringBuilder is not which makes StringBuilder faster than StringBuffer.
+
+3) Concatenation operator "+" is internally implemented using either StringBuffer or StringBuilder.
+
+4) Use String if you require immutability, use StringBuffer in java if you need mutable + thread-safety and use StringBuilder in Java if you require mutable + without thread-safety.
+
+java.util.regex consists of three classes. Pattern class, Matcher class and PatternSyntaxException class.
+
+http://www.geeksforgeeks.org/checked-vs-unchecked-exceptions-in-java/
+
+
+                 +-----------+
+		   | Throwable |
+                   +-----------+
+                    /         \
+		   /           \
+          +-------+          +-----------+
+          | Error |          | Exception |
+          +-------+          +-----------+
+	   /  |  \           / |        \
+         \________/	  \______/    	 \
+			                +------------------+
+	unchecked	 checked	| RuntimeException |
+					+------------------+
+					  /   |    |      \
+					 \_________________/
+					   
+					   unchecked
+OOPs concepts - very serious
+
+Thread can be created by: implementing Runnable interface, extending the Thread class.
+
+"this" is used with variables or methods and used to call constructer of same class.
+
+Holding the reference of the other class within some other class is known as composition.
+
+Generics provide compile-time type safety that allows programmers to catch invalid types at compile time. Java Generic methods and generic classes enable programmers to specify, with a single method declaration, a set of related methods or, with a single class declaration, a set of related types.
+
+Externalizable is an interface which contains two methods readExternal and writeExternal. These methods give you a control over the serialization mechanism.
+
+The size is the number of elements actually stored in the vector, while capacity is the maximum number of elements it can store at a given instance of time.
+
+An enumeration is an interface containing methods for accessing the underlying data structure from which the enumeration is obtained. It allows sequential access to all the elements stored in the collection.
+
+An object's lock is a mechanism that is used by multiple threads to obtain synchronized access to the object. A thread may execute a synchronized method of an object only after it has acquired the object's lock.
+
+Overridden methods must have the same name, argument list, and return type. The overriding method may not limit the access of the method it overrides.
+
